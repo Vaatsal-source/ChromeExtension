@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+
   let originalHash = "";
 
   // 🔐 Hash function
@@ -10,84 +11,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 🚀 COMPRESS
   document.getElementById("compressBtn").addEventListener("click", async () => {
-    const file = document.getElementById("fileInput").files[0];
 
-    if (!file) {
-      alert("Please select a file!");
-      return;
-    }
+    try {
+      const file = document.getElementById("fileInput").files[0];
 
-    // =========================
-    // 📄 TEXT
-    // =========================
-    if (file.name.endsWith(".txt")) {
-      const text = await file.text();
-      const encoder = new TextEncoder();
-      const uint8Data = encoder.encode(text);
+      if (!file) {
+        alert("Please select a file!");
+        return;
+      }
 
-      originalHash = await getSHA256(uint8Data);
+      // 🚫 File size limit (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert("File too large! Max 10MB allowed.");
+        return;
+      }
 
-      const compressed = pako.gzip(uint8Data);
+      // =========================
+      // 📄 TEXT + CSV
+      // =========================
+      if (file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
 
-      const originalSize = uint8Data.length;
-      const compressedSize = compressed.length;
+        const text = await file.text();
+        const encoder = new TextEncoder();
+        const uint8Data = encoder.encode(text);
 
-      const ratio = (originalSize / compressedSize).toFixed(2);
-      const savings = (
-        ((originalSize - compressedSize) / originalSize) *
-        100
-      ).toFixed(2);
+        originalHash = await getSHA256(uint8Data);
 
-      document.getElementById("output").innerText = `
-[TEXT COMPRESSION]
+        const compressed = pako.gzip(uint8Data);
+
+        const originalSize = uint8Data.length;
+        const compressedSize = compressed.length;
+
+        const ratio = (originalSize / compressedSize).toFixed(2);
+        const savings = (((originalSize - compressedSize) / originalSize) * 100).toFixed(2);
+
+        document.getElementById("output").innerText = `
+[TEXT/CSV COMPRESSION]
 Original: ${originalSize} bytes
 Compressed: ${compressedSize} bytes
 Ratio: ${ratio}:1
 Saved: ${savings}%
-      `;
+        `;
 
-      const blob = new Blob([compressed], { type: "application/gzip" });
-      const url = URL.createObjectURL(blob);
+        const blob = new Blob([compressed], { type: "application/gzip" });
+        const url = URL.createObjectURL(blob);
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name + ".gz";
-      a.click();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name + ".gz";
+        a.click();
 
-      URL.revokeObjectURL(url);
-    }
+        URL.revokeObjectURL(url);
+      }
 
-    // =========================
-    // 🖼️ IMAGE
-    // =========================
-    else if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
+      // =========================
+      // 🖼️ IMAGE
+      // =========================
+      else if (file.type.startsWith("image/")) {
 
-      reader.onload = function () {
-        const img = new Image();
-        img.src = reader.result;
+        const reader = new FileReader();
 
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
+        reader.onload = function () {
+          const img = new Image();
+          img.src = reader.result;
 
-          canvas.width = img.width;
-          canvas.height = img.height;
+          img.onload = () => {
 
-          ctx.drawImage(img, 0, 0);
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
 
-          const quality = 0.5;
+            canvas.width = img.width;
+            canvas.height = img.height;
 
-          canvas.toBlob(
-            (blob) => {
+            ctx.drawImage(img, 0, 0);
+
+            const quality = 0.5;
+            const qualityPercent = (quality * 100).toFixed(0);
+
+            canvas.toBlob((blob) => {
+
               const originalSize = file.size;
               const compressedSize = blob.size;
 
               const ratio = (originalSize / compressedSize).toFixed(2);
-              const savings = (
-                ((originalSize - compressedSize) / originalSize) *
-                100
-              ).toFixed(2);
+              const savings = (((originalSize - compressedSize) / originalSize) * 100).toFixed(2);
 
               document.getElementById("output").innerText = `
 [IMAGE COMPRESSION]
@@ -95,7 +102,8 @@ Original: ${originalSize} bytes
 Compressed: ${compressedSize} bytes
 Ratio: ${ratio}:1
 Saved: ${savings}%
-            `;
+Quality: ${qualityPercent}%
+              `;
 
               const url = URL.createObjectURL(blob);
 
@@ -105,21 +113,44 @@ Saved: ${savings}%
               a.click();
 
               URL.revokeObjectURL(url);
-            },
-            "image/jpeg",
-            quality,
-          );
+
+            }, "image/jpeg", quality);
+          };
         };
-      };
 
-      reader.readAsDataURL(file);
-    }
+        reader.readAsDataURL(file);
+      }
 
-    // =========================
-    // 🔊 AUDIO (WAV → MP3)
-    // =========================
-    else if (file.name.endsWith(".wav")) {
-      try {
+      // =========================
+      // 🔊 MP3 (ANALYSIS ONLY)
+      // =========================
+      else if (file.name.endsWith(".mp3")) {
+
+        const originalSize = file.size;
+
+        document.getElementById("output").innerText = `
+[AUDIO ANALYSIS]
+MP3 detected (already compressed)
+
+Size: ${originalSize} bytes
+Bitrate Compression: Already applied
+Note: Further compression may reduce quality
+        `;
+
+        const url = URL.createObjectURL(file);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "reused.mp3";
+        a.click();
+
+        URL.revokeObjectURL(url);
+      }
+
+      // =========================
+      // 🔊 WAV → MP3
+      // =========================
+      else if (file.name.endsWith(".wav")) {
+
         const audioContext = new AudioContext();
 
         const arrayBuffer = await file.arrayBuffer();
@@ -128,7 +159,8 @@ Saved: ${savings}%
         const samples = audioBuffer.getChannelData(0);
         const sampleRate = audioBuffer.sampleRate;
 
-        const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, 128);
+        const bitrate = 128;
+        const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, bitrate);
 
         const blockSize = 1152;
         let mp3Data = [];
@@ -154,10 +186,7 @@ Saved: ${savings}%
         const compressedSize = blob.size;
 
         const ratio = (originalSize / compressedSize).toFixed(2);
-        const savings = (
-          ((originalSize - compressedSize) / originalSize) *
-          100
-        ).toFixed(2);
+        const savings = (((originalSize - compressedSize) / originalSize) * 100).toFixed(2);
 
         document.getElementById("output").innerText = `
 [AUDIO COMPRESSION]
@@ -165,102 +194,110 @@ Original: ${originalSize} bytes
 Compressed: ${compressedSize} bytes
 Ratio: ${ratio}:1
 Saved: ${savings}%
+Bitrate: ${bitrate} kbps
         `;
 
         const url = URL.createObjectURL(blob);
-
         const a = document.createElement("a");
         a.href = url;
         a.download = "compressed.mp3";
         a.click();
 
         URL.revokeObjectURL(url);
-      } catch (err) {
-        alert("Audio compression failed!");
-        console.error(err);
       }
-    }
 
-    // =========================
-    // 🎥 VIDEO (MP4 - simulated compression)
-    // =========================
-    else if (file.name.endsWith(".mp4")) {
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8Data = new Uint8Array(arrayBuffer);
+      // =========================
+      // 🎥 VIDEO
+      // =========================
+      else if (file.name.endsWith(".mp4")) {
 
-      const compressed = pako.gzip(uint8Data);
+        const arrayBuffer = await file.arrayBuffer();
+        const uint8Data = new Uint8Array(arrayBuffer);
 
-      const originalSize = uint8Data.length;
-      const compressedSize = compressed.length;
+        const compressed = pako.gzip(uint8Data);
 
-      const ratio = (originalSize / compressedSize).toFixed(2);
-      const savings = (
-        ((originalSize - compressedSize) / originalSize) *
-        100
-      ).toFixed(2);
+        const originalSize = uint8Data.length;
+        const compressedSize = compressed.length;
 
-      document.getElementById("output").innerText = `
+        const ratio = (originalSize / compressedSize).toFixed(2);
+        const savings = (((originalSize - compressedSize) / originalSize) * 100).toFixed(2);
+
+        document.getElementById("output").innerText = `
 [VIDEO COMPRESSION - SIMULATED]
 Original: ${originalSize} bytes
 Compressed: ${compressedSize} bytes
 Ratio: ${ratio}:1
 Saved: ${savings}%
-      `;
 
-      const blob = new Blob([compressed], { type: "application/gzip" });
-      const url = URL.createObjectURL(blob);
+Method: Lossless GZIP (no quality loss)
+        `;
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name + ".gz";
-      a.click();
+        const blob = new Blob([compressed], { type: "application/gzip" });
+        const url = URL.createObjectURL(blob);
 
-      URL.revokeObjectURL(url);
-    } else {
-      alert("Unsupported file type!");
-    }
-  });
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name + ".gz";
+        a.click();
 
-  // 🔄 DECOMPRESS (TEXT + VIDEO GZIP)
-  document.getElementById("decompressBtn").addEventListener("click", () => {
-    const file = document.getElementById("fileInput").files[0];
-
-    if (!file || !file.name.endsWith(".gz")) {
-      alert("Upload a .gz file!");
-      return;
-    }
-    if (file.name.endsWith(".jpg") || file.name.endsWith(".mp3")) {
-      alert("Lossy files cannot be decompressed to original!");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = async function () {
-      const compressedData = new Uint8Array(reader.result);
-      const decompressed = pako.ungzip(compressedData);
-
-      const newHash = await getSHA256(decompressed);
-
-      if (newHash === originalHash) {
-        document.getElementById("output").innerText =
-          "✅ Perfect Rebuild! Hash Match";
-      } else {
-        document.getElementById("output").innerText =
-          "⚠️ Decompressed (Hash mismatch expected for video)";
+        URL.revokeObjectURL(url);
       }
 
-      const blob = new Blob([decompressed]);
-      const url = URL.createObjectURL(blob);
+      else {
+        alert("Unsupported file type!");
+      }
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.name.replace(".gz", "");
-      a.click();
-
-      URL.revokeObjectURL(url);
-    };
-
-    reader.readAsArrayBuffer(file);
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong during compression!");
+    }
   });
+
+  // 🔄 DECOMPRESS
+  document.getElementById("decompressBtn").addEventListener("click", () => {
+
+    try {
+      const file = document.getElementById("fileInput").files[0];
+
+      if (!file || !file.name.endsWith(".gz")) {
+        alert("Upload a .gz file!");
+        return;
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = async function () {
+
+        const compressedData = new Uint8Array(reader.result);
+        const decompressed = pako.ungzip(compressedData);
+
+        const newHash = await getSHA256(decompressed);
+
+        if (newHash === originalHash) {
+          document.getElementById("output").innerText =
+            "✅ Perfect Rebuild! Hash Match";
+        } else {
+          document.getElementById("output").innerText =
+            "⚠️ Decompressed (Hash mismatch expected for video)";
+        }
+
+        const blob = new Blob([decompressed]);
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.replace(".gz", "");
+        a.click();
+
+        URL.revokeObjectURL(url);
+      };
+
+      reader.readAsArrayBuffer(file);
+
+    } catch (err) {
+      console.error(err);
+      alert("Decompression failed!");
+    }
+  });
+
 });
