@@ -9,15 +9,24 @@ Apply appropriate compression techniques based on file type
 Display:
 
 Original size
+
 Compressed size
+
 Compression ratio
+
 Space savings
+
 Allow download of compressed files
+
 Allow decompression for lossless formats
+
 Provide:
 Hash verification (lossless)
+
 Quality metrics (lossy)
+
 Handle errors gracefully
+
 ⚙️ Features
 📄 Text & CSV Compression (Lossless)
 Algorithm: GZIP (via pako)
