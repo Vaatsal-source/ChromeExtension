@@ -7,6 +7,7 @@ Smart File Compressor is a browser-based Chrome extension that supports compress
 Support multiple file formats: .txt, .csv, .png, .jpg, .wav, .mp3, .mp4
 Apply appropriate compression techniques based on file type
 Display:
+
 Original size
 Compressed size
 Compression ratio
