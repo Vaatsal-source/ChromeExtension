@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart File Compressor</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <h2>🗜️ File Compressor</h2>
+  <p class="subtitle">100% local — your files never leave your device</p>
+
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.wav,.mp3,.mp4,.gz" />
+    <div class="drop-icon">📂</div>
+    <div class="drop-label">Click to select or drag & drop a file</div>
+    <div class="drop-hint">TXT · CSV · JPG · PNG · WAV · MP3 · MP4 · GZ</div>
+  </div>
+  <div id="fileName"></div>
+
+  <div class="btn-group">
+    <button id="compressBtn">⚡ Compress</button>
+    <button id="decompressBtn">📤 Decompress / Quality Check</button>
+  </div>
+
+  <div id="output">Select a file to get started.</div>
+
+  <p class="note">All processing happens in your browser. Nothing is uploaded.</p>
+
+  <script src="pako.min.js"></script>
+  <script src="lame.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
