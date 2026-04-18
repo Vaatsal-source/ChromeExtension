@@ -8,51 +8,74 @@ Support multiple file formats: .txt, .csv, .png, .jpg, .wav, .mp3, .mp4
 Apply appropriate compression techniques based on file type
 Display:
 
-Original size
+1.Original size
 
-Compressed size
+2.Compressed size
 
-Compression ratio
+3.Compression ratio
 
-Space savings
+4.Space savings
 
-Allow download of compressed files
+5.Allow download of compressed files
 
-Allow decompression for lossless formats
+6.Allow decompression for lossless formats
 
 Provide:
-Hash verification (lossless)
+1.Hash verification (lossless)
 
-Quality metrics (lossy)
+2.Quality metrics (lossy)
 
-Handle errors gracefully
+3.Handle errors gracefully
 
 ⚙️ Features
-📄 Text & CSV Compression (Lossless)
-Algorithm: GZIP (via pako)
-Supports: .txt, .csv
-Output: .gz file
-Decompression supported
-Integrity verified using SHA-256 hashing
-🖼️ Image Compression (Lossy)
-Method: Canvas-based JPEG compression
-Adjustable quality (default: 50%)
-Output: .jpg
-Metric: Quality % + size reduction
-Note: Original image cannot be perfectly reconstructed
-🔊 Audio Compression
-WAV → MP3 (Lossy)
-Encoder: lamejs
-Bitrate: 128 kbps
-Metric: Bitrate + size reduction
-MP3 Handling
-Already compressed → analyzed only
-Prevents unnecessary recompression
-🎥 Video Compression (Simulated)
-Method: GZIP compression (lossless fallback)
-Output: .mp4.gz
-Metric: Size reduction
-Justification: Browser limitations prevent real-time encoding like H.264
+
+i)📄 Text & CSV Compression (Lossless)
+
+1.Algorithm: GZIP (via pako)
+
+2.Supports: .txt, .csv
+
+3.Output: .gz file
+
+4.Decompression supported
+
+5.Integrity verified using SHA-256 hashing
+
+ii)🖼️ Image Compression (Lossy)
+1.Method: Canvas-based JPEG compression
+
+2.Adjustable quality (default: 50%)
+
+3.Output: .jpg
+
+4.Metric: Quality % + size reduction
+
+5.Note: Original image cannot be perfectly reconstructed
+
+iii)🔊 Audio Compression
+
+1.WAV → MP3 (Lossy)
+
+2.Encoder: lamejs
+
+3.Bitrate: 128 kbps
+
+4.Metric: Bitrate + size reduction
+
+5.MP3 Handling
+
+6.Already compressed → analyzed only
+
+7.Prevents unnecessary recompression
+
+iv🎥 Video Compression (Simulated)
+1.Method: GZIP compression (lossless fallback)
+
+2.Output: .mp4.gz
+
+3.Metric: Size reduction
+
+4.Justification: Browser limitations prevent real-time encoding like H.264
 🔄 Decompression
 Supported for .gz files only
 Works for:
