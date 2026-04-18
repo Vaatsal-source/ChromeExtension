@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "File Compressor",
+  "version": "1.0",
+  "description": "Compress files easily",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": []
+}
