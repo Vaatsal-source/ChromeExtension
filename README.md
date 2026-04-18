@@ -76,12 +76,18 @@ iv🎥 Video Compression (Simulated)
 3.Metric: Size reduction
 
 4.Justification: Browser limitations prevent real-time encoding like H.264
-🔄 Decompression
-Supported for .gz files only
-Works for:
-Text
-CSV
-Video (GZIP fallback)
+
+i)🔄 Decompression
+1.Supported for .gz files only
+
+2.Works for:
+
+3.Text
+
+4.CSV
+
+5.Video (GZIP fallback)
+
 Uses SHA-256 hash comparison for verification
 🔐 Hash Verification
 Algorithm: SHA-256 (Web Crypto API)
