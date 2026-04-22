@@ -17,11 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("fileInput");
   const fileNameLabel = document.getElementById("fileName");
   const dropZone = document.getElementById("dropZone");
+  const modeSelect = document.getElementById("modeSelect");
+
+  // ✅ NEW UI ELEMENTS
+  const progressBar = document.getElementById("progressBar");
+  const loader = document.getElementById("loader");
 
   // =========================
   // 📂 FILE UI HANDLING
   // =========================
-
   fileInput.addEventListener("change", () => {
     if (fileInput.files.length > 0) {
       const file = fileInput.files[0];
@@ -44,10 +48,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   // 🧰 HELPERS
   // =========================
-
   function setOutput(text, state = "") {
     output.innerText = text;
     output.className = state;
+  }
+
+  function showLoader(show) {
+    loader.style.display = show ? "block" : "none";
+  }
+
+  function updateProgress(value) {
+    progressBar.style.width = value + "%";
+  }
+
+  function resetProgress() {
+    progressBar.style.width = "0%";
   }
 
   function formatBytes(bytes) {
@@ -86,7 +101,6 @@ Saved: ${savings}%`;
   // =========================
   // 📊 IMAGE QUALITY (PSNR)
   // =========================
-
   async function calculatePSNR(originalDataUrl, compressedBlob) {
     return new Promise((resolve) => {
       const compressedUrl = URL.createObjectURL(compressedBlob);
@@ -124,14 +138,12 @@ Saved: ${savings}%`;
           mse /= (w * h * 3);
           URL.revokeObjectURL(compressedUrl);
 
-          if (mse === 0) {
-            resolve("∞ dB (lossless)");
-          } else {
+          if (mse === 0) resolve("∞ dB (lossless)");
+          else {
             const psnr = 20 * Math.log10(255) - 10 * Math.log10(mse);
             resolve(`${psnr.toFixed(2)} dB`);
           }
         };
-
         img2.src = compressedUrl;
       };
 
@@ -142,34 +154,43 @@ Saved: ${savings}%`;
   // =========================
   // 🚀 COMPRESS
   // =========================
-
   document.getElementById("compressBtn").addEventListener("click", async () => {
 
     try {
+      resetProgress();
+      showLoader(true);
+      updateProgress(10);
+
       const file = fileInput.files[0];
 
       if (!file) {
         setOutput("⚠️ Please select a file!", "error");
+        showLoader(false);
         return;
       }
 
       if (file.size > 50 * 1024 * 1024) {
         setOutput("❌ File too large (max 50MB)", "error");
+        showLoader(false);
         return;
       }
 
       const name = file.name.toLowerCase();
+      const mode = modeSelect ? modeSelect.value : "auto";
+
+      updateProgress(25);
 
       // 📄 TEXT / CSV
       if (name.endsWith(".txt") || name.endsWith(".csv")) {
 
         const uint8Data = new TextEncoder().encode(await file.text());
-
         lastCompressed.originalHash = await getSHA256(uint8Data);
-        lastCompressed.originalSize = uint8Data.length;
-        lastCompressed.type = "lossless";
+
+        updateProgress(60);
 
         const compressed = pako.gzip(uint8Data);
+
+        updateProgress(90);
 
         setOutput(
           compressionSummary("TEXT/CSV (gzip)", uint8Data.length, compressed.length),
@@ -188,47 +209,52 @@ Saved: ${savings}%`;
           r.readAsDataURL(file);
         });
 
-        lastCompressed.originalImageDataUrl = dataUrl;
-        lastCompressed.originalSize = file.size;
-        lastCompressed.type = "lossy-image";
-
         const img = new Image();
         img.src = dataUrl;
 
         img.onload = () => {
+          updateProgress(60);
+
           const canvas = document.createElement("canvas");
           canvas.width = img.width;
           canvas.height = img.height;
 
-          canvas.getContext("2d").drawImage(img, 0, 0);
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
 
-          canvas.toBlob(async (blob) => {
+          if (mode === "lossless") {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pngData = UPNG.encode([imageData.data.buffer], canvas.width, canvas.height, 0);
+            const blob = new Blob([pngData], { type: "image/png" });
 
-            const psnr = await calculatePSNR(dataUrl, blob);
+            updateProgress(90);
 
             setOutput(
-              compressionSummary("IMAGE (JPEG 50%)", file.size, blob.size) +
-              `\nQuality (PSNR): ${psnr}`,
+              compressionSummary("IMAGE (LOSSLESS PNG)", file.size, blob.size),
               "success"
             );
 
-            downloadBlob(blob, "compressed.jpg");
+            downloadBlob(blob, "compressed.png");
+            showLoader(false);
+          } else {
+            canvas.toBlob(async (blob) => {
+              updateProgress(90);
 
-          }, "image/jpeg", 0.5);
+              const psnr = await calculatePSNR(dataUrl, blob);
+
+              setOutput(
+                compressionSummary("IMAGE (LOSSY JPEG)", file.size, blob.size) +
+                `\nQuality (PSNR): ${psnr}`,
+                "success"
+              );
+
+              downloadBlob(blob, "compressed.jpg");
+              showLoader(false);
+            }, "image/jpeg", 0.5);
+          }
         };
-      }
 
-      // 🔊 MP3
-      else if (name.endsWith(".mp3")) {
-
-        setOutput(
-`[AUDIO ANALYSIS]
-MP3 already compressed
-Size: ${formatBytes(file.size)}
-⚠️ Further compression reduces quality`
-        );
-
-        downloadBlob(file, "reused.mp3");
+        return;
       }
 
       // 🔊 WAV → MP3
@@ -237,21 +263,17 @@ Size: ${formatBytes(file.size)}
         const audioContext = new AudioContext();
         const audioBuffer = await audioContext.decodeAudioData(await file.arrayBuffer());
 
+        updateProgress(60);
+
         const samples = audioBuffer.getChannelData(0);
-        const sampleRate = audioBuffer.sampleRate;
-        const bitrate = 128;
-
-        lastCompressed.type = "lossy-audio";
-
-        const mp3encoder = new lamejs.Mp3Encoder(1, sampleRate, bitrate);
+        const mp3encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, 128);
 
         let mp3Data = [];
-        const blockSize = 1152;
 
-        for (let i = 0; i < samples.length; i += blockSize) {
-          const chunk = samples.subarray(i, i + blockSize);
-
+        for (let i = 0; i < samples.length; i += 1152) {
+          const chunk = samples.subarray(i, i + 1152);
           const int16 = new Int16Array(chunk.length);
+
           for (let j = 0; j < chunk.length; j++) {
             int16[j] = chunk[j] * 32767;
           }
@@ -262,11 +284,12 @@ Size: ${formatBytes(file.size)}
 
         mp3Data.push(mp3encoder.flush());
 
+        updateProgress(90);
+
         const blob = new Blob(mp3Data, { type: "audio/mp3" });
 
         setOutput(
-          compressionSummary("WAV → MP3", file.size, blob.size) +
-          `\nBitrate: ${bitrate} kbps`,
+          compressionSummary("WAV → MP3", file.size, blob.size),
           "success"
         );
 
@@ -278,14 +301,14 @@ Size: ${formatBytes(file.size)}
 
         const uint8Data = new Uint8Array(await file.arrayBuffer());
 
-        lastCompressed.originalHash = await getSHA256(uint8Data);
-        lastCompressed.type = "lossless";
+        updateProgress(70);
 
         const compressed = pako.gzip(uint8Data);
 
+        updateProgress(90);
+
         setOutput(
-          compressionSummary("VIDEO (gzip)", uint8Data.length, compressed.length) +
-          "\n⚠️ MP4 already compressed",
+          compressionSummary("VIDEO (LOSSLESS GZIP)", uint8Data.length, compressed.length),
           "success"
         );
 
@@ -296,48 +319,57 @@ Size: ${formatBytes(file.size)}
         setOutput("❌ Unsupported file type!", "error");
       }
 
+      updateProgress(100);
+      showLoader(false);
+
     } catch (err) {
       console.error(err);
       setOutput("❌ Compression failed", "error");
+      showLoader(false);
+      resetProgress();
     }
   });
 
   // =========================
   // 🔄 DECOMPRESS
   // =========================
-
   document.getElementById("decompressBtn").addEventListener("click", () => {
 
-    const file = fileInput.files[0];
+    try {
+      resetProgress();
+      showLoader(true);
+      updateProgress(40);
 
-    if (!file) {
-      setOutput("⚠️ Select a file!", "error");
-      return;
-    }
+      const file = fileInput.files[0];
 
-    if (file.name.endsWith(".gz")) {
+      if (!file || !file.name.endsWith(".gz")) {
+        setOutput("❌ Only .gz supported", "error");
+        showLoader(false);
+        return;
+      }
 
       const reader = new FileReader();
 
       reader.onload = async () => {
 
-        const decompressed = pako.ungzip(new Uint8Array(reader.result));
-        const newHash = await getSHA256(decompressed);
+        updateProgress(80);
 
-        if (newHash === lastCompressed.originalHash) {
-          setOutput("✅ Perfect Rebuild!", "success");
-        } else {
-          setOutput("⚠️ Decompressed (hash mismatch expected)");
-        }
+        const decompressed = pako.ungzip(new Uint8Array(reader.result));
+
+        setOutput("✅ Decompressed successfully", "success");
 
         downloadBlob(new Blob([decompressed]), file.name.replace(".gz", ""));
+
+        updateProgress(100);
+        showLoader(false);
       };
 
       reader.readAsArrayBuffer(file);
-    }
 
-    else {
-      setOutput("❌ Only .gz supported for decompression", "error");
+    } catch (err) {
+      console.error(err);
+      setOutput("❌ Decompression failed", "error");
+      showLoader(false);
     }
   });
 

@@ -1,209 +1,246 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Smart File Compressor</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Smart File Compressor</title>
 
-  <!-- Google Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
 
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
+    <style>
+      * {
+        box-sizing: border-box;
+        font-family: "Inter", sans-serif;
+      }
 
-    body {
-      width: 340px;
-      padding: 16px;
-      background: linear-gradient(135deg, #eef2ff, #f8fafc);
-      color: #1e293b;
-    }
+      body {
+        width: 340px;
+        padding: 16px;
+        background: linear-gradient(135deg, #eef2ff, #f8fafc);
+        color: #1e293b;
+      }
 
-    /* HEADER */
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
+      /* HEADER */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
 
-    .logo {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #4f46e5, #22c55e);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-    }
+      .logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #4f46e5, #22c55e);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
 
-    h2 {
-      font-size: 16px;
-      margin: 0;
-    }
+      h2 {
+        font-size: 16px;
+        margin: 0;
+      }
 
-    /* DROP ZONE */
-    .drop-zone {
-      border: 2px dashed #cbd5f5;
-      border-radius: 10px;
-      padding: 18px;
-      text-align: center;
-      background: white;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+      /* DROP ZONE */
+      .drop-zone {
+        border: 2px dashed #cbd5f5;
+        border-radius: 10px;
+        padding: 18px;
+        text-align: center;
+        background: white;
+        cursor: pointer;
+        transition: 0.2s;
+      }
 
-    .drop-zone:hover {
-      border-color: #4f46e5;
-      background: #f8faff;
-    }
+      .drop-zone:hover {
+        border-color: #4f46e5;
+        background: #f8faff;
+      }
 
-    .drop-zone.dragover {
-      border-color: #22c55e;
-      background: #ecfdf5;
-    }
+      .drop-zone.dragover {
+        border-color: #22c55e;
+        background: #ecfdf5;
+      }
 
-    .file-name {
-      margin-top: 8px;
-      font-size: 12px;
-      color: #64748b;
-    }
+      .file-name {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #64748b;
+      }
 
-    input[type="file"] {
-      display: none;
-    }
+      input[type="file"] {
+        display: none;
+      }
 
-    /* BUTTONS */
-    .buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
+      /* BUTTONS */
+      .buttons {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
 
-    button {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-    }
+      button {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+      }
 
-    #compressBtn {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: white;
-    }
+      #compressBtn {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+      }
 
-    #compressBtn:hover {
-      transform: scale(1.03);
-    }
+      #compressBtn:hover {
+        transform: scale(1.03);
+      }
 
-    #decompressBtn {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      color: white;
-    }
+      #decompressBtn {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+      }
 
-    #decompressBtn:hover {
-      transform: scale(1.03);
-    }
+      #decompressBtn:hover {
+        transform: scale(1.03);
+      }
 
-    /* OUTPUT CARD */
-    #output {
-      margin-top: 14px;
-      padding: 12px;
-      background: white;
-      border-radius: 10px;
-      font-size: 12px;
-      white-space: pre-line;
-      box-shadow: 0 5px 12px rgba(0,0,0,0.08);
-      min-height: 70px;
-      transition: 0.3s;
-    }
+      /* OUTPUT CARD */
+      #output {
+        margin-top: 14px;
+        padding: 12px;
+        background: white;
+        border-radius: 10px;
+        font-size: 12px;
+        white-space: pre-line;
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+        min-height: 70px;
+        transition: 0.3s;
+      }
 
-    #output.success {
-      border-left: 4px solid #22c55e;
-    }
+      #output.success {
+        border-left: 4px solid #22c55e;
+      }
 
-    #output.error {
-      border-left: 4px solid #ef4444;
-    }
+      #output.error {
+        border-left: 4px solid #ef4444;
+      }
 
-    /* LOADER */
-    .loader {
-      width: 18px;
-      height: 18px;
-      border: 3px solid #ddd;
-      border-top: 3px solid #4f46e5;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
+      /* LOADER */
+      .loader {
+        width: 18px;
+        height: 18px;
+        border: 3px solid #ddd;
+        border-top: 3px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: auto;
+      }
 
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-    /* FOOTER */
-    .note {
-      margin-top: 10px;
-      font-size: 11px;
-      text-align: center;
-      color: #64748b;
-    }
-    .drop-zone.active {
-  border-color: #22c55e;
-  background: #ecfdf5;
-}
+      /* FOOTER */
+      .note {
+        margin-top: 10px;
+        font-size: 11px;
+        text-align: center;
+        color: #64748b;
+      }
+      .drop-zone.active {
+        border-color: #22c55e;
+        background: #ecfdf5;
+      }
 
-.file-name {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #334155;
-  font-weight: 500;
-}
-  </style>
-</head>
+      .file-name {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #334155;
+        font-weight: 500;
+      }
+    </style>
+  </head>
 
-<body>
+  <body>
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo">⚡</div>
+      <h2>Smart Compressor</h2>
+    </div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="logo">⚡</div>
-    <h2>Smart Compressor</h2>
-  </div>
+    <!-- DROP ZONE -->
+    <label class="drop-zone" id="dropZone">
+      <div>📂 Drop file or click to upload</div>
+      <div class="file-name" id="fileName">No file selected</div>
+      <input type="file" id="fileInput" />
+    </label>
+    <div style="margin-top: 10px">
+      <label style="font-size: 12px">Compression Mode:</label>
+      <select
+        id="modeSelect"
+        style="width: 100%; padding: 6px; border-radius: 6px; margin-top: 4px"
+      >
+        <option value="auto">Auto (Recommended)</option>
+        <option value="lossy">Lossy</option>
+        <option value="lossless">Lossless</option>
+      </select>
+    </div>
+    <!-- BUTTONS -->
+    <div class="buttons">
+      <button id="compressBtn">Compress</button>
+      <button id="decompressBtn">Decompress</button>
+    </div>
+    <div
+      style="
+        width: 100%;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 5px;
+        margin-top: 10px;
+      "
+    >
+      <div
+        id="progressBar"
+        style="
+          height: 100%;
+          width: 0%;
+          background: #4f46e5;
+          border-radius: 5px;
+          transition: 0.3s;
+        "
+      ></div>
+    </div>
 
-  <!-- DROP ZONE -->
-  <label class="drop-zone" id="dropZone">
-    <div>📂 Drop file or click to upload</div>
-    <div class="file-name" id="fileName">No file selected</div>
-    <input type="file" id="fileInput">
-  </label>
+    <div
+      id="loader"
+      class="loader"
+      style="display: none; margin-top: 10px"
+    ></div>
+    <!-- OUTPUT -->
+    <div id="output">Ready to compress 🚀</div>
 
-  <!-- BUTTONS -->
-  <div class="buttons">
-    <button id="compressBtn">Compress</button>
-    <button id="decompressBtn">Decompress</button>
-  </div>
+    <!-- FOOTER -->
+    <div class="note">TXT • CSV • Images • WAV • MP4</div>
 
-  <!-- OUTPUT -->
-  <div id="output">Ready to compress 🚀</div>
+    <!-- LIBS -->
+    <script src="lib/pako.min.js"></script>
+    <script src="lib/lame.min.js"></script>
+    <script src="lib/upng.min.js"></script>
 
-  <!-- FOOTER -->
-  <div class="note">
-    TXT • CSV • Images • WAV • MP4
-  </div>
-
-  <!-- LIBS -->
-  <script src="lib/pako.min.js"></script>
-  <script src="lib/lame.min.js"></script>
-
-  <!-- YOUR LOGIC -->
-  <script src="popup.js"></script>
-
-</body>
+    <!-- YOUR LOGIC -->
+    <script src="popup.js"></script>
+  </body>
 </html>
