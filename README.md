@@ -28,7 +28,6 @@ instant-file-compressor/
 
 Clone the repository:
 
-git clone https://github.com/HardikYadav007/ChromeExtension01
 cd instant-file-compressor
 
 Install dependencies:
@@ -81,8 +80,7 @@ This project is licensed under the MIT License.
 
 👨‍💻 Author
 
-My Name
-GitHub: https://github.com/HardikYadav007
+
 
 ⭐ Support
 
