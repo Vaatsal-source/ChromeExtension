@@ -1,5 +1,5 @@
 # ⚡ Smart File Compressor Extension  
-**Team:** Your Team Name  
+**Team:** FUUDU DEVS
 **Status:** ✅ Submitted — MACS JC Project 2  
 
 ---
