@@ -50,6 +50,7 @@ Smart File Compressor is a high-performance Chrome Extension designed to bridge 
 | Image (JPEG) | 500 KB | 180 KB | 2.77:1 | 64% |
 | Audio (WAV→MP3) | 5.0 MB | 1.2 MB | 4.16:1 | 76% |
 | Video (MP4) | 10.0 MB | 9.2 MB | 1.08:1 | 8% |
+<img width="447" height="502" alt="image" src="https://github.com/user-attachments/assets/56f87b12-f215-45ff-96e8-3dee75348ade" />
 
 ---
 
